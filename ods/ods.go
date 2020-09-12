@@ -18,12 +18,11 @@ import (
 
 	"github.com/klauspost/compress/zstd"
 	qt "github.com/valyala/quicktemplate"
-	errors "golang.org/x/xerrors"
 
 	"github.com/UNO-SOFT/spreadsheet"
 )
 
-var _ = errors.Errorf
+var _ = fmt.Errorf
 
 //go:generate qtc
 

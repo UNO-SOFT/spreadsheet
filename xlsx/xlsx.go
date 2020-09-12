@@ -11,8 +11,6 @@ import (
 	"sync"
 	"time"
 
-	errors "golang.org/x/xerrors"
-
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/UNO-SOFT/spreadsheet"
 )
@@ -139,14 +137,14 @@ func (xls *XLSXSheet) AppendRow(values ...interface{}) error {
 	for i, v := range values {
 		axis, err := excelize.CoordinatesToCellName(i+1, int(xls.row))
 		if err != nil {
-			return errors.Errorf("%d/%d: %w", i, int(xls.row), err)
+			return fmt.Errorf("%d/%d: %w", i, int(xls.row), err)
 		}
 		isNil := v == nil
 		if !isNil {
 			if t, ok := v.(time.Time); ok {
 				if isNil = t.IsZero(); !isNil {
 					if err = xls.xl.SetCellStr(xls.Name, axis, t.Format("2006-01-02")); err != nil {
-						return errors.Errorf("%s[%s]: %w", xls.Name, axis, err)
+						return fmt.Errorf("%s[%s]: %w", xls.Name, axis, err)
 					}
 					continue
 				}
@@ -156,7 +154,7 @@ func (xls *XLSXSheet) AppendRow(values ...interface{}) error {
 			continue
 		}
 		if err = xls.xl.SetCellValue(xls.Name, axis, v); err != nil {
-			return errors.Errorf("%s[%s]: %w", xls.Name, axis, err)
+			return fmt.Errorf("%s[%s]: %w", xls.Name, axis, err)
 		}
 	}
 	return nil
