@@ -99,8 +99,6 @@ func (xlw *XLSXWriter) getStyle(style spreadsheet.Style) int {
 	if !style.FontBold && style.Format == "" {
 		return 0
 	}
-	xlw.mu.Lock()
-	defer xlw.mu.Unlock()
 	k := fmt.Sprintf("%t\t%s", style.FontBold, style.Format)
 	s, ok := xlw.styles[k]
 	if ok {
