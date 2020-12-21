@@ -28,16 +28,16 @@ var _ = fmt.Errorf
 
 var qtMu sync.Mutex
 
-// AcquireWriter wraps the given io.Writer to be usable with quicktemplates.
-func AcquireWriter(w io.Writer) *qt.Writer {
+// acquireWriter wraps the given io.Writer to be usable with quicktemplates.
+func acquireWriter(w io.Writer) *qt.Writer {
 	qtMu.Lock()
 	W := qt.AcquireWriter(w)
 	qtMu.Unlock()
 	return W
 }
 
-// ReleaseWriter returns the *quicktemplate.Writer to the pool.
-func ReleaseWriter(W *qt.Writer) { qtMu.Lock(); qt.ReleaseWriter(W); qtMu.Unlock() }
+// releaseWriter returns the *quicktemplate.Writer to the pool.
+func releaseWriter(W *qt.Writer) { qtMu.Lock(); qt.ReleaseWriter(W); qtMu.Unlock() }
 
 // ValueType is the cell's value's type.
 type ValueType uint8
@@ -101,9 +101,9 @@ func NewWriter(w io.Writer) (*ODSWriter, error) {
 			zw.Close()
 			return nil, err
 		}
-		W := AcquireWriter(sub)
+		W := acquireWriter(sub)
 		elt.Stream(W)
-		ReleaseWriter(W)
+		releaseWriter(W)
 	}
 
 	bw, err := zw.Create("content.xml")
@@ -111,9 +111,9 @@ func NewWriter(w io.Writer) (*ODSWriter, error) {
 		zw.Close()
 		return nil, err
 	}
-	W := AcquireWriter(bw)
+	W := acquireWriter(bw)
 	StreamBeginSpreadsheet(W)
-	ReleaseWriter(W)
+	releaseWriter(W)
 
 	return &ODSWriter{w: bw, zipWriter: zw}, nil
 }
@@ -144,9 +144,9 @@ func (ow *ODSWriter) Close() error {
 	}
 	ow.files = nil
 
-	W := AcquireWriter(ow.w)
+	W := acquireWriter(ow.w)
 	StreamEndSpreadsheet(W)
-	ReleaseWriter(W)
+	releaseWriter(W)
 	ow.w = nil
 	zw := ow.zipWriter
 	ow.zipWriter = nil
@@ -155,9 +155,9 @@ func (ow *ODSWriter) Close() error {
 	if err != nil {
 		return err
 	}
-	W = AcquireWriter(bw)
+	W = acquireWriter(bw)
 	StreamStyles(W, ow.styles)
-	ReleaseWriter(W)
+	releaseWriter(W)
 	return zw.Close()
 }
 
@@ -200,7 +200,7 @@ func (ow *ODSWriter) NewSheet(name string, cols []spreadsheet.Column) (spreadshe
 		sheet.f.Close()
 		return nil, err
 	}
-	sheet.w = AcquireWriter(sheet.zw)
+	sheet.w = acquireWriter(sheet.zw)
 	ch := make(chan io.ReadCloser, 1)
 	sheet.done = ch
 	ow.files = append(ow.files, ch)
@@ -258,7 +258,7 @@ func (ods *ODSSheet) Close() error {
 		return nil
 	}
 	StreamEndSheet(W)
-	ReleaseWriter(W)
+	releaseWriter(W)
 	if done == nil {
 		return nil
 	}
