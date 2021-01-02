@@ -127,10 +127,15 @@ func (xlw *XLSXWriter) getStyle(style spreadsheet.Style) int {
 	return s
 }
 
+const MaxRowCount = 1_048_576
+
 func (xls *XLSXSheet) Close() error { return nil }
 func (xls *XLSXSheet) AppendRow(values ...interface{}) error {
 	xls.mu.Lock()
 	defer xls.mu.Unlock()
+	if xls.row >= MaxRowCount {
+		return spreadsheet.ErrTooManyRows
+	}
 	xls.row++
 	for i, v := range values {
 		axis, err := excelize.CoordinatesToCellName(i+1, int(xls.row))

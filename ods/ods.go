@@ -230,17 +230,25 @@ func (ow *ODSWriter) getStyleName(style spreadsheet.Style) string {
 type ODSSheet struct {
 	Name string
 
-	mu   sync.Mutex
-	ow   *ODSWriter
-	w    *qt.Writer
-	f    *os.File
-	zw   *zstd.Encoder
-	done chan<- io.ReadCloser
+	mu       sync.Mutex
+	ow       *ODSWriter
+	w        *qt.Writer
+	f        *os.File
+	zw       *zstd.Encoder
+	done     chan<- io.ReadCloser
+	rowCount int
 }
+
+const MaxRowCount = 1 << 20
 
 func (ods *ODSSheet) AppendRow(values ...interface{}) error {
 	ods.mu.Lock()
+	if ods.rowCount >= MaxRowCount {
+		ods.mu.Unlock()
+		return spreadsheet.ErrTooManyRows
+	}
 	StreamRow(ods.w, values...)
+	ods.rowCount++
 	ods.mu.Unlock()
 	return nil
 }

@@ -4,7 +4,10 @@
 
 package spreadsheet
 
-import "io"
+import (
+	"errors"
+	"io"
+)
 
 // Writer writes the spreadsheet consisting of the sheets created
 // with NewSheet. The write finishes when Close is called.
@@ -35,3 +38,5 @@ type Column struct {
 	Name           string
 	Header, Column Style
 }
+
+var ErrTooManyRows = errors.New("too many rows")
