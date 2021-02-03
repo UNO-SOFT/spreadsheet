@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/360EntSecGroup-Skylar/excelize/v2 v2.3.1
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/johnfercher/maroto v0.29.0
 	github.com/klauspost/compress v1.11.4
 	github.com/klauspost/cpuid v1.2.0 // indirect
 	github.com/kr/text v0.2.0 // indirect

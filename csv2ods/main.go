@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"encoding/csv"
 	"flag"
 	"fmt"
 	"io"
@@ -10,10 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"unicode"
-
-	"golang.org/x/text/encoding"
-	"golang.org/x/text/encoding/htmlindex"
 
 	"github.com/UNO-SOFT/spreadsheet"
 	"github.com/UNO-SOFT/spreadsheet/ods"
@@ -27,25 +21,8 @@ func main() {
 }
 
 func Main() error {
-	encName := os.Getenv("LANG")
-	if i := strings.IndexByte(encName, '.'); i >= 0 {
-		encName = strings.ToUpper(encName[i+1:])
-	}
-	if encName == "" {
-		encName = "UTF-8"
-	}
-	flag.StringVar(&encName, "charset", encName, "csv charset name")
+	flagEnc := flag.String("charset", spreadsheet.EncName, "csv charset name")
 	flag.Parse()
-
-	encName = strings.ToUpper(encName)
-	var enc encoding.Encoding
-	if !(encName == "" || encName == "UTF-8" || encName == "UTF8") {
-		var err error
-		if enc, err = htmlindex.Get(encName); err != nil {
-			return fmt.Errorf("%q: %w", encName, err)
-		}
-	}
-	log.Printf("encoding: %s", enc)
 
 	fn := flag.Arg(0)
 	fh := os.Stdout
@@ -73,7 +50,7 @@ func Main() error {
 		} else if fn != "" && fn != "-" {
 			sheetName = strings.TrimSuffix(filepath.Base(fn), ".csv")
 		}
-		if err := copyFile(w, sheetName, enc, fn); err != nil {
+		if err := copyFile(w, sheetName, fn, *flagEnc); err != nil {
 			return fmt.Errorf("%q: %w", fn, err)
 		}
 	}
@@ -84,36 +61,12 @@ func Main() error {
 	return fh.Close()
 }
 
-func copyFile(w spreadsheet.Writer, sheetName string, enc encoding.Encoding, fn string) error {
-	fh := os.Stdin
-	var err error
-	if !(fn == "" || fn == "-") {
-		if fh, err = os.Open(fn); err != nil {
-			return fmt.Errorf("open %q: %w", fn, err)
-		}
-	}
-	defer fh.Close()
-	r := io.Reader(fh)
-	if enc != nil {
-		r = enc.NewDecoder().Reader(r)
-	}
-	br := bufio.NewReaderSize(r, 1<<20)
-	b, err := br.Peek(1024)
-	if err != nil && len(b) == 0 {
+func copyFile(w spreadsheet.Writer, sheetName string, fn, encName string) error {
+	cr, err := spreadsheet.OpenCsv(fn, encName)
+	if err != nil {
 		return err
 	}
-	var sep = rune(',')
-	for _, r := range string(b) {
-		if r == '"' || r == '_' || unicode.IsLetter(r) || unicode.IsNumber(r) {
-			continue
-		}
-		sep = r
-		break
-	}
-
-	cr := csv.NewReader(br)
-	cr.ReuseRecord = true
-	cr.Comma = sep
+	defer cr.Close()
 
 	row, err := cr.Read()
 	if err != nil {
