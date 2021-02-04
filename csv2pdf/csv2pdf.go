@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/hex"
 	"flag"
+	"fmt"
 	"log"
 	"math"
 	"os"
@@ -21,9 +23,19 @@ func main() {
 }
 
 func Main() error {
+	alternateColor := Color{Color: color.Color{
+		Red:   230,
+		Green: 230,
+		Blue:  230,
+	}}
 	flagEnc := flag.String("charset", spreadsheet.EncName, "csv charset name")
 	flagOut := flag.String("o", "", "output file name (default stdout")
+	flagColor := flag.String("alternate-color", alternateColor.String(), "alternate color")
 	flag.Parse()
+
+	if err := alternateColor.Parse(*flagColor); err != nil {
+		return err
+	}
 
 	cr, err := spreadsheet.OpenCsv(flag.Arg(0), *flagEnc)
 	if err != nil {
@@ -75,14 +87,10 @@ func Main() error {
 			Size:      8.0,
 			GridSizes: gridSize,
 		},
-		Align: consts.Center,
-		AlternatedBackground: &color.Color{
-			Red:   100,
-			Green: 120,
-			Blue:  255,
-		},
-		HeaderContentSpace: 10.0,
-		Line:               false,
+		Align:                consts.Center,
+		AlternatedBackground: &alternateColor.Color,
+		HeaderContentSpace:   10.0,
+		Line:                 false,
 	})
 	if *flagOut == "" || *flagOut == "-" {
 		buf, err := m.Output()
@@ -93,4 +101,21 @@ func Main() error {
 		return err
 	}
 	return m.OutputFileAndClose(*flagOut)
+}
+
+type Color struct {
+	color.Color
+}
+
+func (c *Color) String() string {
+	return fmt.Sprintf("%x%x%x", c.Red, c.Green, c.Blue)
+}
+func (c *Color) Parse(s string) error {
+	b, err := hex.DecodeString(s)
+	if err != nil {
+		return err
+	}
+	c.Red, c.Green, c.Blue = int(b[0]), int(b[1]), int(b[2])
+	return nil
+	return err
 }
