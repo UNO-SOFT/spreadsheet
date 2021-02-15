@@ -27,10 +27,10 @@ type Sheet interface {
 
 // Style is a style for a column/row/cell.
 type Style struct {
-	// FontBold is true if the font is bold
-	FontBold bool
 	// Format is the number format
 	Format string
+	// FontBold is true if the font is bold
+	FontBold bool
 }
 
 // Column contains the Name of the column and header's style and column's style.

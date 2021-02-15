@@ -80,13 +80,13 @@ const (
 func NewWriter(w io.Writer) (*ODSWriter, error) {
 	zw := zip.NewWriter(w)
 	for _, elt := range []struct {
-		Name   string
 		Stream func(*qt.Writer)
+		Name   string
 	}{
-		{"mimetype", StreamMimetype},
-		{"meta.xml", StreamMeta},
-		{"META-INF/manifest.xml", StreamManifest},
-		{"settings.xml", StreamSettings},
+		{Name: "mimetype", Stream: StreamMimetype},
+		{Name: "meta.xml", Stream: StreamMeta},
+		{Name: "META-INF/manifest.xml", Stream: StreamManifest},
+		{Name: "settings.xml", Stream: StreamSettings},
 	} {
 		parts := strings.SplitAfter(elt.Name, "/")
 		var prev string
@@ -120,12 +120,11 @@ func NewWriter(w io.Writer) (*ODSWriter, error) {
 
 // ODSWriter writes content.xml of ODS zip.
 type ODSWriter struct {
-	mu        sync.Mutex
-	zipWriter *zip.Writer
 	w         io.Writer
+	zipWriter *zip.Writer
+	styles    map[string]string
 	files     []<-chan io.ReadCloser
-
-	styles map[string]string
+	mu        sync.Mutex
 }
 
 // Close the ODSWriter.
@@ -228,15 +227,14 @@ func (ow *ODSWriter) getStyleName(style spreadsheet.Style) string {
 }
 
 type ODSSheet struct {
-	Name string
-
-	mu       sync.Mutex
+	done     chan<- io.ReadCloser
 	ow       *ODSWriter
 	w        *qt.Writer
 	f        *os.File
 	zw       *zstd.Encoder
-	done     chan<- io.ReadCloser
+	Name     string
 	rowCount int
+	mu       sync.Mutex
 }
 
 const MaxRowCount = 1 << 20

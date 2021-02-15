@@ -18,19 +18,18 @@ import (
 var _ = (spreadsheet.Writer)((*XLSXWriter)(nil))
 
 type XLSXWriter struct {
-	mu     sync.Mutex
-	xl     *excelize.File
 	w      io.Writer
-	sheets []string
+	xl     *excelize.File
 	styles map[string]int
+	sheets []string
+	mu     sync.Mutex
 }
 
 type XLSXSheet struct {
+	xl   *excelize.File
 	Name string
-
-	mu  sync.Mutex
-	xl  *excelize.File
-	row int64
+	row  int64
+	mu   sync.Mutex
 }
 
 // NewWriter returns a new spreadsheet.Writer.
