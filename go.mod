@@ -1,20 +1,26 @@
 module github.com/UNO-SOFT/spreadsheet
 
-go 1.14
+go 1.17
 
 require (
-	github.com/360EntSecGroup-Skylar/excelize/v2 v2.3.1
-	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/johnfercher/maroto v0.29.0
+	github.com/johnfercher/maroto v0.33.0
 	github.com/klauspost/compress v1.13.4
-	github.com/klauspost/cpuid v1.2.0 // indirect
-	github.com/kr/text v0.2.0 // indirect
-	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/valyala/quicktemplate v1.6.3
-	github.com/xuri/efp v0.0.0-20201016154823-031c29024257 // indirect
-	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
-	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect
-	golang.org/x/text v0.3.4
-	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
-	gopkg.in/yaml.v2 v2.2.8 // indirect
+	github.com/xuri/efp v0.0.0-20210322160811-ab561f5b45e3 // indirect
+	github.com/xuri/excelize/v2 v2.4.1
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
+	golang.org/x/net v0.0.0-20210726213435-c6fcb2dbf985 // indirect
+	golang.org/x/text v0.3.6
+)
+
+require (
+	github.com/boombuler/barcode v1.0.1 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/uuid v1.3.0 // indirect
+	github.com/jung-kurt/gofpdf v1.16.2 // indirect
+	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
+	github.com/richardlehane/mscfb v1.0.3 // indirect
+	github.com/richardlehane/msoleps v1.0.1 // indirect
+	github.com/ruudk/golang-pdf417 v0.0.0-20201230142125-a7e3863a1245 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
 )
