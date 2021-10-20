@@ -40,10 +40,12 @@ func acquireWriter(w io.Writer) *qt.Writer {
 func releaseWriter(W *qt.Writer) { qtMu.Lock(); qt.ReleaseWriter(W); qtMu.Unlock() }
 
 // ValueType is the cell's value's type.
-type ValueType uint8
+type ValueType struct {
+	t uint8
+}
 
 func (v ValueType) String() string {
-	switch v {
+	switch v.t {
 	case 'f':
 		return "float"
 	case 'd':
@@ -53,25 +55,32 @@ func (v ValueType) String() string {
 	}
 }
 func getValueType(v interface{}) ValueType {
-	switch v.(type) {
+	switch x := v.(type) {
 	case float32, float64,
 		int, int8, int16, int32, int64,
 		uint, uint16, uint32, uint64:
 		return FloatType
 	case time.Time:
 		return DateType
+	case string:
+		if strings.HasPrefix(x, "https://") || strings.HasPrefix(x, "http://") {
+			return LinkType
+		}
+		return StringType
 	default:
 		return StringType
 	}
 }
 
-const (
+var (
 	// FloatType for numerical data
-	FloatType = ValueType('f')
+	FloatType = ValueType{'f'}
 	// DateType for dates
-	DateType = ValueType('d')
+	DateType = ValueType{'d'}
+	// LinkType is a string that seems to be a https?:// link
+	LinkType = ValueType{'a'}
 	// StringType for everything else
-	StringType = ValueType('s')
+	StringType = ValueType{'s'}
 )
 
 // NewWriter returns a content writer and a zip closer for an ods file.

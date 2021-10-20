@@ -103,7 +103,11 @@
 		if typ == FloatType  %} office:value-type="float" office:value="{%s= fmt.Sprintf("%v", v) %}" calcext:value-type="float"{%
 		elseif false && typ == DateType %} office:value-type="date" office:date-value="{%= getDateValue(v) %}" calcext:value-type="date"{%
 		else %} office:value-type="string"{%
-		endif %} ><text:p>{%= getText(v) %}</text:p></table:table-cell>{%
+		endif %} ><text:p>{% code text := getText(v) %}{% 
+            if typ == LinkType %}<text:a xlink:href="{%s= text %}">{%s= text %}</text:a>{% 
+            else %}{%s= text %}{% 
+            endif %}</text:p>
+    </table:table-cell>{%
 	endfor %}</table:table-row>
 {% endfunc %}
 
