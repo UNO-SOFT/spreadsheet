@@ -7,7 +7,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/UNO-SOFT/spreadsheet"
 	"github.com/UNO-SOFT/spreadsheet/ods"
@@ -92,9 +94,40 @@ func copyFile(w spreadsheet.Writer, sheetName string, fn, encName string) error 
 		}
 		rowI = rowI[:0]
 		for _, s := range row {
+			if len(s) != 0 {
+				if len(s) == 10 && likelyDate(s) {
+					if t, err := time.ParseInLocation("2006-01-02", s, time.Local); err == nil {
+						rowI = append(rowI, t)
+						continue
+					}
+				}
+				if likelyNumber(s) {
+					if i, err := strconv.ParseInt(s, 10, 64); err == nil {
+						rowI = append(rowI, i)
+						continue
+					}
+					if f, err := strconv.ParseFloat(s, 64); err == nil {
+						rowI = append(rowI, f)
+						continue
+					}
+				}
+			}
 			rowI = append(rowI, s)
 		}
 		sheet.AppendRow(rowI...)
 	}
 	return sheet.Close()
+}
+
+func likelyNumber(s string) bool {
+	return strings.IndexFunc(s,
+		func(r rune) bool {
+			return !(r == '-' || r == '.' || '0' <= r && r <= '9')
+		}) < 0
+}
+func likelyDate(s string) bool {
+	return strings.IndexFunc(s,
+		func(r rune) bool {
+			return !(r == '-' || '0' <= r && r <= '9')
+		}) < 0
 }
