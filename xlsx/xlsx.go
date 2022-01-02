@@ -1,4 +1,4 @@
-// Copyright 2020, Tamás Gulácsi.
+// Copyright 2020, 2022 Tamás Gulácsi.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xuri/excelize/v2"
 	"github.com/UNO-SOFT/spreadsheet"
+	"github.com/xuri/excelize/v2"
 )
 
 var _ = (spreadsheet.Writer)((*XLSXWriter)(nil))
