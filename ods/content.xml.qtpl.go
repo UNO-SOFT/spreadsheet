@@ -5,22 +5,22 @@
 package ods
 
 //line content.xml.qtpl:1
-import "strings"
+import (
+	"encoding/xml"
+	"fmt"
+	"strings"
+	"time"
 
-//line content.xml.qtpl:2
-import "encoding/xml"
+	"github.com/UNO-SOFT/spreadsheet" //line content.xml.qtpl:2
 
 //line content.xml.qtpl:3
-import "time"
 
 //line content.xml.qtpl:4
-import "fmt"
 
 //line content.xml.qtpl:5
-import "github.com/UNO-SOFT/spreadsheet"
 
 //line content.xml.qtpl:8
-import (
+
 	qtio422016 "io"
 
 	qt422016 "github.com/valyala/quicktemplate"

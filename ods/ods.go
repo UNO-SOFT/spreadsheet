@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
@@ -200,7 +199,7 @@ func (ow *ODSWriter) NewSheet(name string, cols []spreadsheet.Column) (spreadshe
 	sheet := &ODSSheet{Name: name, ow: ow}
 
 	var err error
-	if sheet.f, err = ioutil.TempFile("", "spreadsheet-ods-*.xml"); err != nil {
+	if sheet.f, err = os.CreateTemp("", "spreadsheet-ods-*.xml"); err != nil {
 		return nil, err
 	}
 	os.Remove(sheet.f.Name())
