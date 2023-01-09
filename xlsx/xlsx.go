@@ -1,4 +1,4 @@
-// Copyright 2020, 2022 Tamás Gulácsi.
+// Copyright 2020, 2023 Tamás Gulácsi.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,6 @@ package xlsx
 import (
 	"fmt"
 	"io"
-	"strings"
 	"sync"
 	"time"
 
@@ -103,19 +102,14 @@ func (xlw *XLSXWriter) getStyle(style spreadsheet.Style) int {
 	if ok {
 		return s
 	}
-	var buf strings.Builder
-	buf.WriteByte('{')
+	var st excelize.Style
 	if style.FontBold {
-		buf.WriteString(`"font":{"bold":true}`)
+		st.Font = &excelize.Font{Bold: true}
 	}
 	if style.Format != "" {
-		if buf.Len() > 1 {
-			buf.WriteByte(',')
-		}
-		fmt.Fprintf(&buf, `"custom_number_format":%q`, style.Format)
+		st.CustomNumFmt = &style.Format
 	}
-	buf.WriteByte('}')
-	s, err := xlw.xl.NewStyle(buf.String())
+	s, err := xlw.xl.NewStyle(&st)
 	if err != nil {
 		panic(err)
 	}
@@ -126,6 +120,7 @@ func (xlw *XLSXWriter) getStyle(style spreadsheet.Style) int {
 	return s
 }
 
+// MaxRowCount is the number of maximum rows.
 const MaxRowCount = 1_048_576
 
 func (xls *XLSXSheet) Close() error { return nil }
