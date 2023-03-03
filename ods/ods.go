@@ -1,11 +1,10 @@
-// Copyright 2020, Tamás Gulácsi.
+// Copyright 2020, 2023 Tamás Gulácsi.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 package ods
 
 import (
-	"archive/zip"
 	"encoding/xml"
 	"fmt"
 	"hash/fnv"
@@ -15,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/klauspost/compress/zip"
 	"github.com/klauspost/compress/zstd"
 	qt "github.com/valyala/quicktemplate"
 
@@ -86,6 +86,7 @@ var (
 //
 // This writer allows concurrent write to separate sheets.
 func NewWriter(w io.Writer) (*ODSWriter, error) {
+	now := time.Now()
 	zw := zip.NewWriter(w)
 	for _, elt := range []struct {
 		Stream func(*qt.Writer)
@@ -100,11 +101,15 @@ func NewWriter(w io.Writer) (*ODSWriter, error) {
 		var prev string
 		for _, p := range parts[:len(parts)-1] {
 			prev += p
-			if _, err := zw.CreateHeader(&zip.FileHeader{Name: prev}); err != nil {
+			if _, err := zw.CreateHeader(&zip.FileHeader{
+				Name: prev, Method: zip.Deflate, Modified: now,
+			}); err != nil {
 				return nil, err
 			}
 		}
-		sub, err := zw.CreateHeader(&zip.FileHeader{Name: elt.Name})
+		sub, err := zw.CreateHeader(&zip.FileHeader{
+			Name: elt.Name, Method: zip.Deflate, Modified: now,
+		})
 		if err != nil {
 			zw.Close()
 			return nil, err
@@ -114,7 +119,9 @@ func NewWriter(w io.Writer) (*ODSWriter, error) {
 		releaseWriter(W)
 	}
 
-	bw, err := zw.Create("content.xml")
+	bw, err := zw.CreateHeader(&zip.FileHeader{
+		Name: "content.xml", Method: zip.Deflate, Modified: now,
+	})
 	if err != nil {
 		zw.Close()
 		return nil, err
@@ -158,7 +165,9 @@ func (ow *ODSWriter) Close() error {
 	zw := ow.zipWriter
 	ow.zipWriter = nil
 	defer zw.Close()
-	bw, err := zw.Create("styles.xml")
+	bw, err := zw.CreateHeader(&zip.FileHeader{
+		Name: "styles.xml", Method: zip.Deflate, Modified: time.Now(),
+	})
 	if err != nil {
 		return err
 	}
