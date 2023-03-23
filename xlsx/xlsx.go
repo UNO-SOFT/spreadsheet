@@ -5,6 +5,8 @@
 package xlsx
 
 import (
+	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"io"
 	"sync"
@@ -138,20 +140,71 @@ func (xls *XLSXSheet) AppendRow(values ...interface{}) error {
 		}
 		isNil := v == nil
 		if !isNil {
-			if t, ok := v.(time.Time); ok {
-				if isNil = t.IsZero(); !isNil {
-					if err = xls.xl.SetCellStr(xls.Name, axis, t.Format("2006-01-02")); err != nil {
-						return fmt.Errorf("%s[%s]: %w", xls.Name, axis, err)
-					}
-					continue
+			if vr, ok := v.(driver.Valuer); ok {
+				if vv, err := vr.Value(); err == nil {
+					v = vv
 				}
 			}
-		}
-		if isNil {
-			continue
-		}
-		if err = xls.xl.SetCellValue(xls.Name, axis, v); err != nil {
-			return fmt.Errorf("%s[%s]: %w", xls.Name, axis, err)
+			//fmt.Printf("%s: %#v (%T)\n", axis, v, v)
+			var err error
+			var printed bool
+			switch x := v.(type) {
+			case time.Time:
+				if isNil = x.IsZero(); !isNil {
+					err = xls.xl.SetCellStr(xls.Name, axis, x.Format("2006-01-02"))
+					printed = true
+				}
+			case sql.NullTime:
+				if x.Valid {
+					t := x.Time
+					if isNil = t.IsZero(); !isNil {
+						err = xls.xl.SetCellStr(xls.Name, axis, t.Format("2006-01-02"))
+						printed = true
+					}
+				} else {
+					isNil = true
+				}
+			case sql.NullFloat64:
+				if x.Valid {
+					err = xls.xl.SetCellFloat(xls.Name, axis, x.Float64, -1, 64)
+					printed = true
+				} else {
+					isNil = true
+				}
+			case sql.NullInt64:
+				if x.Valid {
+					err = xls.xl.SetCellInt(xls.Name, axis, int(x.Int64))
+					printed = true
+				} else {
+					isNil = true
+				}
+			case sql.NullString:
+				if x.Valid {
+					v = x.String
+				} else {
+					v, isNil = "", true
+				}
+			case fmt.Stringer:
+				v = x.String()
+			}
+			if isNil {
+				continue
+			}
+			if err != nil {
+				return fmt.Errorf("%s[%s]: %w", xls.Name, axis, err)
+			}
+			if printed {
+				continue
+			}
+			if s, ok := v.(string); ok {
+				err = xls.xl.SetCellStr(xls.Name, axis, s)
+			} else {
+				err = xls.xl.SetCellValue(xls.Name, axis, v)
+			}
+			if err != nil {
+				return fmt.Errorf("%s[%s]: %w", xls.Name, axis, err)
+			}
+
 		}
 	}
 	return nil
