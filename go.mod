@@ -1,6 +1,6 @@
 module github.com/UNO-SOFT/spreadsheet
 
-go 1.17
+go 1.20
 
 require (
 	github.com/johnfercher/maroto v0.39.0
@@ -15,10 +15,6 @@ require (
 
 require (
 	github.com/boombuler/barcode v1.0.1 // indirect
-	github.com/go-logfmt/logfmt v0.5.1 // indirect
-	github.com/go-logr/logr v1.2.3 // indirect
-	github.com/godror/godror v0.37.0 // indirect
-	github.com/godror/knownpb v0.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
@@ -27,5 +23,4 @@ require (
 	github.com/ruudk/golang-pdf417 v0.0.0-20201230142125-a7e3863a1245 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/xuri/nfp v0.0.0-20220409054826-5e722a1d9e22 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
 )

@@ -10,13 +10,12 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/UNO-SOFT/spreadsheet"
 	"github.com/xuri/excelize/v2"
-
-	"github.com/godror/godror"
 )
 
 var _ = (spreadsheet.Writer)((*XLSXWriter)(nil))
@@ -174,15 +173,28 @@ func (xls *XLSXSheet) AppendRow(values ...interface{}) error {
 				} else {
 					isNil = true
 				}
-			case godror.Number:
+			case spreadsheet.Number:
 				if x == "" {
 					isNil = true
-				} else {
-					var f float64
-					if f, err = strconv.ParseFloat(string(x), 64); err == nil {
-						err = xls.xl.SetCellFloat(xls.Name, axis, f, -1, 64)
+				} else if (x[0] == '-' || '0' <= x[0] && x[0] <= '9') &&
+					strings.Count(string(x), ".") < 2 &&
+					strings.IndexFunc(string(x)[1:], func(r rune) bool {
+						return !(r == '.' || '0' <= r && r <= '9')
+					}) == -1 {
+					if strings.IndexByte(string(x), '.') >= 0 || len(x) >= 19 {
+						var f float64
+						if f, err = strconv.ParseFloat(string(x), 64); err == nil {
+							err = xls.xl.SetCellFloat(xls.Name, axis, f, -1, 64)
+						}
+					} else {
+						var i int64
+						if i, err = strconv.ParseInt(string(x), 10, 64); err == nil {
+							err = xls.xl.SetCellInt(xls.Name, axis, int(i))
+						}
 					}
 					printed = true
+				} else {
+					v = string(x)
 				}
 			case sql.NullInt64:
 				if x.Valid {

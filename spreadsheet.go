@@ -40,3 +40,6 @@ type Column struct {
 }
 
 var ErrTooManyRows = errors.New("too many rows")
+
+// Number is a string that contains a number.
+type Number string
