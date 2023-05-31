@@ -9,11 +9,14 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"io"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/UNO-SOFT/spreadsheet"
 	"github.com/xuri/excelize/v2"
+
+	"github.com/godror/godror"
 )
 
 var _ = (spreadsheet.Writer)((*XLSXWriter)(nil))
@@ -170,6 +173,16 @@ func (xls *XLSXSheet) AppendRow(values ...interface{}) error {
 					printed = true
 				} else {
 					isNil = true
+				}
+			case godror.Number:
+				if x == "" {
+					isNil = true
+				} else {
+					var f float64
+					if f, err = strconv.ParseFloat(string(x), 64); err == nil {
+						err = xls.xl.SetCellFloat(xls.Name, axis, f, -1, 64)
+					}
+					printed = true
 				}
 			case sql.NullInt64:
 				if x.Valid {
