@@ -1,6 +1,8 @@
 module github.com/UNO-SOFT/spreadsheet
 
-go 1.20
+go 1.21
+
+toolchain go1.21.0
 
 require (
 	github.com/johnfercher/maroto v0.39.0
