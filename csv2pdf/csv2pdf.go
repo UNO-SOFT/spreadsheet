@@ -117,5 +117,4 @@ func (c *Color) Parse(s string) error {
 	}
 	c.Red, c.Green, c.Blue = int(b[0]), int(b[1]), int(b[2])
 	return nil
-	return err
 }
