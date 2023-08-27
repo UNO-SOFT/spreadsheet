@@ -10,7 +10,7 @@ require (
 	github.com/xuri/excelize/v2 v2.7.0
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/text v0.9.0
+	golang.org/x/text v0.12.0
 )
 
 require (
