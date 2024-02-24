@@ -1,8 +1,8 @@
 module github.com/UNO-SOFT/spreadsheet
 
-go 1.21
+go 1.22
 
-toolchain go1.21.0
+toolchain go1.22.0
 
 require (
 	github.com/johnfercher/maroto v0.39.0
@@ -12,7 +12,7 @@ require (
 	github.com/xuri/excelize/v2 v2.7.0
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/text v0.12.0
+	golang.org/x/text v0.14.0
 )
 
 require (
