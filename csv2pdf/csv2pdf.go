@@ -13,15 +13,20 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/UNO-SOFT/spreadsheet"
 	"github.com/UNO-SOFT/zlog/v2"
 	"github.com/peterbourgon/ff/v3/ffcli"
 
-	"github.com/johnfercher/maroto/pkg/color"
-	"github.com/johnfercher/maroto/pkg/consts"
-	"github.com/johnfercher/maroto/pkg/pdf"
-	"github.com/johnfercher/maroto/pkg/props"
+	"github.com/johnfercher/maroto/v2"
+	"github.com/johnfercher/maroto/v2/pkg/components/text"
+	"github.com/johnfercher/maroto/v2/pkg/config"
+	"github.com/johnfercher/maroto/v2/pkg/consts/align"
+	"github.com/johnfercher/maroto/v2/pkg/consts/orientation"
+	"github.com/johnfercher/maroto/v2/pkg/consts/pagesize"
+	"github.com/johnfercher/maroto/v2/pkg/core"
+	"github.com/johnfercher/maroto/v2/pkg/props"
 )
 
 var verbose zlog.VerboseVar
@@ -35,7 +40,10 @@ func main() {
 }
 
 func Main() error {
-	alternateColor := Color{Color: color.Color{
+	fgColor := props.Color{}
+	bgColor := props.Color{Red: 255, Green: 255, Blue: 255}
+	alternateFgColor := fgColor
+	alternateBgColor := Color{Color: props.Color{
 		Red:   230,
 		Green: 230,
 		Blue:  230,
@@ -45,14 +53,18 @@ func Main() error {
 	fs.Var(&verbose, "v", "logging verbosity")
 	flagEnc := fs.String("charset", spreadsheet.EncName, "csv charset name")
 	flagOut := fs.String("o", "", "output file name (default input file + .pdf)")
-	flagColor := fs.String("alternate-color", alternateColor.String(), "alternate color")
+	flagColor := fs.String("alternate-color", alternateBgColor.String(), "alternate background color")
 	flagLandscape := fs.Bool("L", false, "landscape orientation (default: portrait)")
 	flagFontSize := fs.Float64("f", 8, "font size")
 	flagPrintPagenum := fs.Bool("print-pagenum", false, "print page numbers")
 
 	app := ffcli.Command{Name: "csv2pdf", FlagSet: fs,
 		Exec: func(ctx context.Context, args []string) error {
-			cr, err := spreadsheet.OpenCsv(args[0], *flagEnc)
+			var inp string
+			if len(args) != 0 {
+				inp = args[0]
+			}
+			cr, err := spreadsheet.OpenCsv(inp, *flagEnc)
 			if err != nil {
 				return err
 			}
@@ -89,46 +101,73 @@ func Main() error {
 					gridSize[i] = 1
 				}
 			}
-			orientation := consts.Portrait
+			orient := orientation.Vertical
 			if *flagLandscape {
-				orientation = consts.Landscape
+				orient = orientation.Horizontal
 			}
-			m := pdf.NewMaroto(orientation, consts.A4)
+			cfg := config.NewBuilder().
+				WithCompression(true).
+				WithCreationDate(time.Now()).
+				WithCreator("UNO-SOFT/spreadsheet/csv2pdf", false).
+				WithMargins(1, 1, 1).
+				WithPageSize(pagesize.A4).
+				WithOrientation(orient).
+				WithSubject(inp, true)
 			if *flagPrintPagenum {
-				//
+				cfg = cfg.WithPageNumber("{current}/{total}", props.RightBottom)
 			}
-			m.TableList(headers, contents, props.TableList{
-				HeaderProp: props.TableListContent{
-					Family:    consts.Arial,
-					Style:     consts.Bold,
-					Size:      *flagFontSize * 1.375,
-					GridSizes: gridSize,
+			m := maroto.NewMetricsDecorator(maroto.New(cfg.Build()))
+
+			headerProps := props.Text{Family: "arial", Size: *flagFontSize * 1.375, Align: align.Center, Color: &alternateFgColor}
+			headerCols := make([]core.Col, 0, len(headers))
+			for _, h := range headers {
+				headerCols = append(headerCols, text.NewCol(1, h, headerProps))
+			}
+			m.AddRow(headerProps.Size*7/8, headerCols...).
+				WithStyle(&props.Cell{BackgroundColor: &alternateBgColor.Color})
+
+			type rowProp struct {
+				props.Text
+				props.Cell
+			}
+			contentProps := []rowProp{
+				rowProp{
+					Text: props.Text{Family: "courier", Size: *flagFontSize, Color: &fgColor},
+					Cell: props.Cell{BackgroundColor: &bgColor},
 				},
-				ContentProp: props.TableListContent{
-					Family:    consts.Courier,
-					Style:     consts.Normal,
-					Size:      *flagFontSize,
-					GridSizes: gridSize,
+				rowProp{
+					Text: props.Text{Family: "courier", Size: *flagFontSize, Color: &alternateFgColor},
+					Cell: props.Cell{BackgroundColor: &alternateBgColor.Color},
 				},
-				Align:                consts.Center,
-				AlternatedBackground: &alternateColor.Color,
-				HeaderContentSpace:   *flagFontSize * 1.2,
-				Line:                 false,
-			})
+			}
+			if len(contents) != 0 {
+				content := make([]core.Col, len(contents[0]))
+				for i, cc := range contents {
+					props := &contentProps[i%2]
+					for i, c := range cc {
+						content[i] = text.NewCol(1,
+							c, props.Text)
+					}
+					m.AddRow(contentProps[0].Text.Size, content...).
+						WithStyle(&props.Cell)
+				}
+			}
+
+			doc, err := m.Generate()
+			if err != nil {
+				return err
+			}
+
 			out := *flagOut
 			if out == "" &&
 				len(args) != 0 && args[0] != "" && args[0] != "-" {
 				out = args[0] + ".pdf"
 			}
 			if out == "" || out == "-" {
-				buf, err := m.Output()
-				if err != nil {
-					return err
-				}
-				_, err = os.Stdout.Write(buf.Bytes())
+				_, err = os.Stdout.Write(doc.GetBytes())
 				return err
 			}
-			return m.OutputFileAndClose(out)
+			return doc.Save(out)
 		},
 	}
 
@@ -145,8 +184,18 @@ func Main() error {
 		return err
 	}
 
-	if err := alternateColor.Parse(*flagColor); err != nil {
-		return err
+	if *flagColor != "" {
+		if err := alternateBgColor.Parse(*flagColor); err != nil {
+			return err
+		}
+		// 0.2989 R + 0.5870 G + 0.1140 B
+		if 0.2989*float64(alternateBgColor.Red)+
+			0.5870*float64(alternateBgColor.Green)+
+			0.1140*float64(alternateBgColor.Blue) > 127 {
+			alternateFgColor = props.Color{}
+		} else {
+			alternateFgColor = props.Color{Red: 255, Green: 255, Blue: 255}
+		}
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
@@ -156,7 +205,7 @@ func Main() error {
 }
 
 type Color struct {
-	color.Color
+	props.Color
 }
 
 func (c *Color) String() string {
