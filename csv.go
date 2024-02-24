@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 	"unicode"
@@ -50,9 +51,10 @@ func OpenCsv(fn, encName string) (csvReadCloser, error) {
 			return csvReadCloser{}, err
 		}
 	}
-	fh := os.Stdout
+	fh := os.Stdin
 	if !(fn == "" || fn == "-") {
 		var err error
+		slog.Debug("OpenCsv", "file", fn)
 		if fh, err = os.Open(fn); err != nil {
 			return csvReadCloser{}, err
 		}
