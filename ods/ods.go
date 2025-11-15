@@ -53,7 +53,7 @@ func (v ValueType) String() string {
 		return "string"
 	}
 }
-func getValueType(v interface{}) ValueType {
+func getValueType(v any) ValueType {
 	switch x := v.(type) {
 	case float32, float64,
 		int, int8, int16, int32, int64,
@@ -256,7 +256,7 @@ type ODSSheet struct {
 
 const MaxRowCount = 1 << 20
 
-func (ods *ODSSheet) AppendRow(values ...interface{}) error {
+func (ods *ODSSheet) AppendRow(values ...any) error {
 	ods.mu.Lock()
 	if ods.rowCount >= MaxRowCount {
 		ods.mu.Unlock()

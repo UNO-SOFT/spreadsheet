@@ -128,7 +128,7 @@ func (xlw *XLSXWriter) getStyle(style spreadsheet.Style) int {
 const MaxRowCount = 1_048_576
 
 func (xls *XLSXSheet) Close() error { return nil }
-func (xls *XLSXSheet) AppendRow(values ...interface{}) error {
+func (xls *XLSXSheet) AppendRow(values ...any) error {
 	xls.mu.Lock()
 	defer xls.mu.Unlock()
 	if xls.row >= MaxRowCount {

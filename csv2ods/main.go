@@ -84,7 +84,7 @@ func copyFile(w spreadsheet.Writer, sheetName string, fn, encName string) error 
 		return err
 	}
 
-	var rowI []interface{}
+	var rowI []any
 	for {
 		if row, err = cr.Read(); err != nil {
 			if err == io.EOF {

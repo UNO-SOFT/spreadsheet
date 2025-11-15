@@ -1,8 +1,6 @@
 module github.com/UNO-SOFT/spreadsheet
 
-go 1.22
-
-toolchain go1.22.0
+go 1.24.0
 
 require (
 	github.com/klauspost/compress v1.15.14
@@ -11,7 +9,7 @@ require (
 	github.com/xuri/excelize/v2 v2.7.0
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/text v0.14.0
+	golang.org/x/text v0.31.0
 )
 
 require (

@@ -22,7 +22,7 @@ type Writer interface {
 // Sheet should be Closed when finished.
 type Sheet interface {
 	io.Closer
-	AppendRow(values ...interface{}) error
+	AppendRow(values ...any) error
 }
 
 // Style is a style for a column/row/cell.
