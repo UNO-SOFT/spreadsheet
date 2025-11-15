@@ -189,7 +189,7 @@ func (xls *XLSXSheet) AppendRow(values ...any) error {
 					} else {
 						var i int64
 						if i, err = strconv.ParseInt(string(x), 10, 64); err == nil {
-							err = xls.xl.SetCellInt(xls.Name, axis, int(i))
+							err = xls.xl.SetCellInt(xls.Name, axis, i)
 						}
 					}
 					printed = true
@@ -198,7 +198,7 @@ func (xls *XLSXSheet) AppendRow(values ...any) error {
 				}
 			case sql.NullInt64:
 				if x.Valid {
-					err = xls.xl.SetCellInt(xls.Name, axis, int(x.Int64))
+					err = xls.xl.SetCellInt(xls.Name, axis, x.Int64)
 					printed = true
 				} else {
 					isNil = true

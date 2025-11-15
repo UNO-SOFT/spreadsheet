@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"log/slog"
 	"math"
 	"os"
 	"os/signal"
@@ -34,7 +33,7 @@ var logger = zlog.NewLogger(zlog.MaybeConsoleHandler(&verbose, os.Stderr)).SLog(
 
 func main() {
 	if err := Main(); err != nil {
-		slog.Error("MAIN", "error", err)
+		logger.Error("MAIN", "error", err)
 		os.Exit(1)
 	}
 }
@@ -80,7 +79,7 @@ func Main() error {
 				widths[i] = float64(len(s))
 				avg += widths[i]
 			}
-			slog.Debug("widths", "headers", headers, "widths", widths)
+			logger.Debug("widths", "headers", headers, "widths", widths)
 
 			contents, err := cr.ReadAll()
 			if err != nil {
@@ -109,12 +108,16 @@ func Main() error {
 				WithCompression(true).
 				WithCreationDate(time.Now()).
 				WithCreator("UNO-SOFT/spreadsheet/csv2pdf", false).
-				WithMargins(1, 1, 1).
+				WithBottomMargin(1).
+				WithTopMargin(1).
+				WithLeftMargin(1).
+				WithRightMargin(1).
 				WithPageSize(pagesize.A4).
 				WithOrientation(orient).
 				WithSubject(inp, true)
 			if *flagPrintPagenum {
-				cfg = cfg.WithPageNumber("{current}/{total}", props.RightBottom)
+				cfg = cfg.WithPageNumber(props.PageNumber{
+					Pattern: "{current}/{total}", Place: props.LeftBottom})
 			}
 			m := maroto.NewMetricsDecorator(maroto.New(cfg.Build()))
 
@@ -179,7 +182,7 @@ func Main() error {
 			args = append(args, a)
 		}
 	}
-	slog.Debug("args", "original", os.Args[1:], "fixed", args)
+	logger.Debug("args", "original", os.Args[1:], "fixed", args)
 	if err := app.Parse(args); err != nil {
 		return err
 	}
