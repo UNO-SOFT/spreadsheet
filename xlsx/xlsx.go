@@ -162,7 +162,7 @@ func (xls *XLSXSheet) AppendRow(values ...any) error {
 				if x.Valid {
 					t := x.Time
 					if isNil = t.IsZero(); !isNil {
-						err = xls.xl.SetCellStr(xls.Name, axis, t.Format("2006-01-02"))
+						err = xls.xl.SetCellStr(xls.Name, axis, t.Format(xls.dateFormat))
 						printed = true
 					}
 				} else {
