@@ -21,18 +21,19 @@ import (
 var _ = (spreadsheet.Writer)((*XLSXWriter)(nil))
 
 type XLSXWriter struct {
-	w      io.Writer
-	xl     *excelize.File
-	styles map[string]int
-	sheets []string
-	mu     sync.Mutex
+	dateFormat string
+	w          io.Writer
+	xl         *excelize.File
+	styles     map[string]int
+	sheets     []string
+	mu         sync.Mutex
 }
 
 type XLSXSheet struct {
-	xl   *excelize.File
-	Name string
-	row  int64
-	mu   sync.Mutex
+	xl               *excelize.File
+	Name, DateFormat string
+	row              int64
+	mu               sync.Mutex
 }
 
 // NewWriter returns a new spreadsheet.Writer.
@@ -41,8 +42,9 @@ type XLSXSheet struct {
 //
 // This writer collects everything in memory, so big sheets may impose problems.
 func NewWriter(w io.Writer) *XLSXWriter {
-	return &XLSXWriter{w: w, xl: excelize.NewFile()}
+	return &XLSXWriter{w: w, xl: excelize.NewFile(), dateFormat: "2006-01-02"}
 }
+func (xlw *XLSXWriter) SetDateFormat(format string) *XLSXWriter { xlw.dateFormat = format; return xlw }
 
 func (xlw *XLSXWriter) Close() error {
 	if xlw == nil {
@@ -90,7 +92,7 @@ func (xlw *XLSXWriter) NewSheet(name string, columns []spreadsheet.Column) (spre
 			}
 		}
 	}
-	xls := &XLSXSheet{xl: xlw.xl, Name: name}
+	xls := &XLSXSheet{xl: xlw.xl, Name: name, DateFormat: xlw.dateFormat}
 	if hasHeader {
 		xls.row++
 	}
@@ -153,7 +155,7 @@ func (xls *XLSXSheet) AppendRow(values ...any) error {
 			switch x := v.(type) {
 			case time.Time:
 				if isNil = x.IsZero(); !isNil {
-					err = xls.xl.SetCellStr(xls.Name, axis, x.Format("2006-01-02"))
+					err = xls.xl.SetCellStr(xls.Name, axis, x.Format(xls.DateFormat))
 					printed = true
 				}
 			case sql.NullTime:
