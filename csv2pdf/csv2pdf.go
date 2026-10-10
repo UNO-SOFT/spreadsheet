@@ -1,4 +1,4 @@
-// Copyright 2021 Tamas Gulacsi. All rights reserved.
+// Copyright 2021, 2026 Tamas Gulacsi. All rights reserved.
 
 package main
 
@@ -49,15 +49,21 @@ func Main() error {
 	}}
 
 	fs := flag.NewFlagSet("csv2pdf", flag.ContinueOnError)
-	fs.Var(&verbose, "v", "logging verbosity")
+	fs.Var(&verbose, "verbose", "logging verbosity")
 	flagEnc := fs.String("charset", spreadsheet.EncName, "csv charset name")
-	flagOut := fs.String("o", "", "output file name (default input file + .pdf)")
+	flagOut := fs.String("out", "", "output file name (default input file + .pdf)")
 	flagColor := fs.String("alternate-color", alternateBgColor.String(), "alternate background color")
-	flagLandscape := fs.Bool("L", false, "landscape orientation (default: portrait)")
-	flagFontSize := fs.Float64("f", 8, "font size")
+	flagLandscape := fs.Bool("landscape", false, "landscape orientation (default: portrait)")
+	flagFontSize := fs.Float64("font-size", 8, "font size")
 	flagPrintPagenum := fs.Bool("print-pagenum", false, "print page numbers")
 
-	app := cli.Command{Name: "csv2pdf", Flags: fs,
+	app := cli.Command{Name: "csv2pdf",
+		Flags: fs, FlagConfigs: []cli.FlagConfig{
+			{Name: "font-size", Short: "f"},
+			{Name: "landscape", Short: "L"},
+			{Name: "out", Short: "o"},
+			{Name: "verbose", Short: "v"},
+		},
 		Exec: func(ctx context.Context, state *cli.State) error {
 			args := state.Args
 			var inp string
@@ -185,7 +191,7 @@ func Main() error {
 	}
 	logger.Debug("args", "original", os.Args[1:], "fixed", args)
 	if err := cli.Parse(&app, args); err != nil {
-		return err
+		return cli.HandleErrHelp(err, &app, nil)
 	}
 
 	if *flagColor != "" {

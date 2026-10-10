@@ -3,17 +3,16 @@ module github.com/UNO-SOFT/spreadsheet
 go 1.27.0
 
 require (
+	github.com/UNO-SOFT/cli v0.0.0-20261009074406-95b18dbd4953
 	github.com/UNO-SOFT/zlog v0.8.6
 	github.com/johnfercher/maroto/v2 v2.3.1
 	github.com/klauspost/compress v1.18.1
-	github.com/peterbourgon/ff/v3 v3.4.0
 	github.com/valyala/quicktemplate v1.8.0
 	github.com/xuri/excelize/v2 v2.10.0
 	golang.org/x/text v0.31.0
 )
 
 require (
-	github.com/UNO-SOFT/cli v0.0.0-20261009074406-95b18dbd4953 // indirect
 	github.com/boombuler/barcode v1.1.0 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
@@ -26,12 +25,10 @@ require (
 	github.com/johnfercher/go-tree v1.1.0 // indirect
 	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
-	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/pdfcpu/pdfcpu v0.11.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.4 // indirect
-	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/tiendc/go-deepcopy v1.7.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/xuri/efp v0.0.1 // indirect
