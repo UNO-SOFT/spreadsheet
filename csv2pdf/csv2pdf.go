@@ -16,8 +16,8 @@ import (
 
 	"github.com/UNO-SOFT/spreadsheet"
 	"github.com/UNO-SOFT/zlog/v2"
-	"github.com/peterbourgon/ff/v3/ffcli"
 
+	"github.com/UNO-SOFT/cli"
 	"github.com/johnfercher/maroto/v2"
 	"github.com/johnfercher/maroto/v2/pkg/components/text"
 	"github.com/johnfercher/maroto/v2/pkg/config"
@@ -57,8 +57,9 @@ func Main() error {
 	flagFontSize := fs.Float64("f", 8, "font size")
 	flagPrintPagenum := fs.Bool("print-pagenum", false, "print page numbers")
 
-	app := ffcli.Command{Name: "csv2pdf", FlagSet: fs,
-		Exec: func(ctx context.Context, args []string) error {
+	app := cli.Command{Name: "csv2pdf", Flags: fs,
+		Exec: func(ctx context.Context, state *cli.State) error {
+			args := state.Args
 			var inp string
 			if len(args) != 0 {
 				inp = args[0]
@@ -183,7 +184,7 @@ func Main() error {
 		}
 	}
 	logger.Debug("args", "original", os.Args[1:], "fixed", args)
-	if err := app.Parse(args); err != nil {
+	if err := cli.Parse(&app, args); err != nil {
 		return err
 	}
 
@@ -204,7 +205,7 @@ func Main() error {
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		os.Interrupt, syscall.SIGTERM)
 	defer cancel()
-	return app.Run(ctx)
+	return cli.Run(ctx, &app, nil)
 }
 
 type Color struct {
