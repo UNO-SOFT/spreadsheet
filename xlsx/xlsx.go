@@ -178,7 +178,7 @@ func (xls *XLSXSheet) AppendRow(values ...any) error {
 			case spreadsheet.Number:
 				if x == "" {
 					isNil = true
-				} else if (x[0] == '-' || '0' <= x[0] && x[0] <= '9') &&
+				} else if (x[0] == '-' && len(x) > 1 || '0' <= x[0] && x[0] <= '9') &&
 					strings.Count(string(x), ".") < 2 &&
 					strings.IndexFunc(string(x)[1:], func(r rune) bool {
 						return !(r == '.' || '0' <= r && r <= '9')
@@ -218,7 +218,7 @@ func (xls *XLSXSheet) AppendRow(values ...any) error {
 				continue
 			}
 			if err != nil {
-				return fmt.Errorf("%s[%s]: %w", xls.Name, axis, err)
+				return fmt.Errorf("%s[%s]=%#v: %w", xls.Name, axis, v, err)
 			}
 			if printed {
 				continue
