@@ -59,6 +59,7 @@ func OpenCsv(fn, encName string) (csvReadCloser, error) {
 			return csvReadCloser{}, err
 		}
 	}
+	defer fh.Close()
 	r := io.ReadCloser(fh)
 	if enc != nil {
 		r = struct {
